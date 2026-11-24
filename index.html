@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>питон онлайн</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Marck+Script&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:'Nunito',system-ui,sans-serif;color:#fff;background:linear-gradient(160deg,#150a3a 0%,#2a1060 60%,#3d1680 100%) fixed;transition:background .6s,color .6s;overflow-x:hidden}
+body.light{background:#f7f4ff;color:#2a1060}
+body.ide-on{background:#1e1e1e;overflow:hidden}
+#sky{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0;transition:opacity .6s}
+body.light #sky{opacity:0}
+body.ide-on #sky{display:none}
+.comet{position:absolute;top:var(--t);left:var(--l);width:var(--w,140px);height:2px;border-radius:2px;background:linear-gradient(90deg,#fff,rgba(190,160,255,.5) 30%,transparent);transform:rotate(-35deg);opacity:0;animation:fly var(--d) linear var(--s) infinite}
+.comet::before{content:"";position:absolute;left:-2px;top:-2px;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px rgba(200,170,255,.8)}
+@keyframes fly{0%{transform:translate(0,0) rotate(-35deg);opacity:0}8%{opacity:.9}65%{opacity:.9}100%{transform:translate(-55vw,38vw) rotate(-35deg);opacity:0}}
+#app{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:16px 18px 60px;min-height:100vh}
+#app.ide{max-width:none;padding:0;min-height:0;height:100vh;height:100dvh}
+.screen{animation:rise .5s both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+button,input,textarea{font:inherit;color:inherit}
+.btn{border:0;border-radius:999px;padding:14px 26px;font-weight:800;background:#fff;color:#2a1060;cursor:pointer;transition:transform .15s,opacity .2s}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4)}
+.btn.dark{background:#2a1060;color:#fff}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row.center{justify-content:center}
+/* intro */
+.intro{display:flex;flex-direction:column;align-items:center;padding-top:7vh;text-align:center}
+.orb{width:112px;height:112px;border-radius:50%;background:radial-gradient(circle at 30% 25%,#5a2fb0,#2a1060 70%);box-shadow:0 0 0 2px rgba(255,255,255,.22),0 0 44px rgba(160,120,255,.55);display:grid;place-items:center;transition:transform 1s cubic-bezier(.2,.8,.2,1)}
+.orb svg{width:54px;height:54px;fill:#fff;animation:popstar 1s cubic-bezier(.2,1.4,.4,1) both,twinkle 3s 1s ease-in-out infinite}
+.intro.logo .orb{transform:translateY(24vh) scale(1.55)}
+@keyframes popstar{from{transform:scale(0) rotate(-90deg)}to{transform:none}}
+@keyframes twinkle{50%{transform:scale(1.12);filter:drop-shadow(0 0 8px #fff)}}
+#bub{display:flex;flex-direction:column;align-items:center;width:100%}
+.bubble{position:relative;margin-top:28px;background:#fff;color:#1a0b3d;border-radius:28px;padding:18px 24px;max-width:340px;font-weight:800;font-size:1.15rem;line-height:1.35;box-shadow:5px 6px 0 rgba(201,184,255,.35);animation:pop .45s cubic-bezier(.2,1.5,.4,1) both}
+.bubble::before{content:"";position:absolute;top:-14px;left:50%;margin-left:-14px;border:14px solid transparent;border-top:0;border-bottom-color:#fff}
+@keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.late{animation:fadein .5s 1.4s both;margin-top:24px}
+.fade{animation:fadein .5s .3s both;margin-top:22px}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.round{width:86px;height:86px;border-radius:50%;border:0;background:#fff;color:#2a1060;font-size:2rem;font-weight:800;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.25);transition:transform .15s}
+.round:active{transform:scale(.93)}
+.name-in{width:100%;max-width:300px;padding:14px 18px;border-radius:16px;border:1.5px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);font-size:1.2rem;text-align:center;outline:0}
+.name-in::placeholder{color:rgba(255,255,255,.45)}
+.greet{min-height:80vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.greet h1{font-family:'Marck Script',cursive;font-weight:400;margin:0;font-size:2.6rem;line-height:1.15;animation:rise .9s both}
+.greet h1 span{display:block;font-size:4.6rem;color:#5b2fc9;margin:.05em 0}
+.greet .btn{margin-top:38px;animation:fadein .6s 1s both}
+.toast{position:fixed;left:50%;bottom:50px;transform:translateX(-50%);background:#fff;color:#2a1060;padding:10px 18px;border-radius:99px;font-weight:700;z-index:50;animation:rise .3s both;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:90%;text-align:center}
+
+/* ================= VS CODE ================= */
+.vs{--fs:14px;--lh:21px;height:100%;display:flex;flex-direction:column;background:#1e1e1e;color:#cccccc;font-family:-apple-system,'Segoe UI',system-ui,sans-serif;font-size:13px;position:relative}
+.vsmain{flex:1;display:flex;min-height:0}
+.act{width:48px;flex:none;background:#333333;display:flex;flex-direction:column;align-items:center;padding-top:4px;z-index:6}
+.ab{width:48px;height:48px;border:0;background:none;color:#858585;cursor:pointer;display:grid;place-items:center;position:relative}
+.ab:hover,.ab.on{color:#fff}
+.ab.on::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:2px;background:#fff}
+.ab svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.sp{flex:1}
+.side{width:230px;flex:none;background:#252526;display:flex;flex-direction:column;border-right:1px solid #2b2b2b;z-index:5}
+.side.hide{display:none}
+.sh{padding:10px 20px;font-size:11px;letter-spacing:.04em;color:#bbbbbb}
+.sec{display:flex;align-items:center;padding:3px 8px 3px 6px;font-size:11px;font-weight:700;color:#cccccc;background:#383838;gap:4px}
+.sec span{flex:1}
+.mini{background:none;border:0;color:#cccccc;cursor:pointer;font-size:16px;line-height:1;padding:3px 6px;border-radius:4px}
+.mini:hover{background:#ffffff1f}
+.fi{display:flex;align-items:center;gap:6px;padding:3px 8px 3px 20px;cursor:pointer;height:26px;font-size:13px;color:#cccccc}
+.fi:hover{background:#2a2d2e}
+.fi.on{background:#37373d;color:#fff}
+.fi .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fi .x{opacity:0;background:none;border:0;color:#ccc;cursor:pointer;font-size:15px;padding:0 4px}
+.fi:hover .x,.fi.on .x{opacity:.7}
+.pyi{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:3px;background:linear-gradient(135deg,#3776ab 50%,#ffd43b 50%);font-size:0}
+.newf{margin:4px 8px 4px 20px;width:calc(100% - 28px);background:#3c3c3c;border:1px solid #007acc;color:#fff;padding:3px 6px;outline:0;font-size:13px}
+.col{flex:1;display:flex;flex-direction:column;min-width:0}
+.tabs{display:flex;height:35px;background:#252526;flex:none;align-items:stretch}
+.tabl{display:flex;flex:1;overflow-x:auto;scrollbar-width:none}
+.tabl::-webkit-scrollbar{display:none}
+.tab{display:flex;align-items:center;gap:7px;padding:0 8px 0 12px;background:#2d2d2d;color:#969696;cursor:pointer;border-right:1px solid #252526;white-space:nowrap;font-size:13px;flex:none}
+.tab.on{background:#1e1e1e;color:#fff;box-shadow:inset 0 1px 0 #007acc}
+.tab .x{background:none;border:0;color:inherit;opacity:.0;cursor:pointer;font-size:15px;border-radius:4px;padding:1px 5px}
+.tab.on .x,.tab:hover .x{opacity:.8}
+.runbtn{width:42px;border:0;background:none;color:#89d185;cursor:pointer;display:grid;place-items:center;flex:none}
+.runbtn:hover{background:#ffffff1a}
+.runbtn.stop{color:#f48771}
+.runbtn svg{width:20px;height:20px}
+.crumb{height:22px;display:flex;align-items:center;padding:0 14px;font-size:12px;color:#a9a9a9;flex:none;background:#1e1e1e}
+.edwrap{flex:1;position:relative;min-height:80px;background:#1e1e1e}
+.scroll{position:absolute;inset:0;overflow:auto;display:flex;align-items:flex-start;font-family:Consolas,'Cascadia Code','SF Mono',Menlo,'DejaVu Sans Mono',monospace;font-size:var(--fs);line-height:var(--lh)}
+.gut{position:sticky;left:0;flex:none;background:#1e1e1e;color:#858585;text-align:right;padding:8px 12px 8px 14px;white-space:pre;z-index:2;user-select:none;min-height:100%}
+.code{position:relative;flex:1 0 auto;min-width:0;min-height:100%}
+.hl,#ta{margin:0;padding:8px 40px 80px 12px;font:inherit;line-height:inherit;white-space:pre;tab-size:4;letter-spacing:0;font-variant-ligatures:none;border:0}
+.hl{color:#d4d4d4;min-width:100%;width:max-content;pointer-events:none}
+#ta{position:absolute;inset:0;width:100%;height:100%;background:transparent;color:transparent;caret-color:#aeafad;resize:none;overflow:hidden;outline:0;-webkit-text-fill-color:transparent}
+#ta::selection{background:#264f78;-webkit-text-fill-color:transparent}
+.k{color:#c586c0}.s2{color:#569cd6}.str{color:#ce9178}.num{color:#b5cea8}.cm{color:#6a9955;font-style:italic}.fn{color:#dcdcaa}.cls{color:#4ec9b0}.dec{color:#dcdcaa}.id{color:#9cdcfe}
+.sug{position:absolute;z-index:20;min-width:230px;max-width:min(420px,92%);max-height:190px;overflow-y:auto;background:#252526;border:1px solid #454545;box-shadow:0 2px 8px #000a;font-size:13px}
+.sug[hidden]{display:none}
+.si{display:flex;gap:7px;align-items:center;padding:2px 8px;height:22px;cursor:pointer;white-space:nowrap}
+.si.on{background:#04395e;color:#fff}
+.si .ic{width:16px;text-align:center;font-weight:700;font-size:12px;flex:none}
+.si .l{flex:none}
+.si .d{color:#9d9d9d;font-size:12px;overflow:hidden;text-overflow:ellipsis;margin-left:6px}
+.sdoc{padding:6px 10px;border-top:1px solid #454545;font-size:12px;color:#bbb;background:#252526;white-space:normal;position:sticky;bottom:0}
+.ic.f,.ic.m{color:#b180d7}.ic.k{color:#d4d4d4}.ic.s{color:#d4d4d4}.ic.c{color:#ee9d28}.ic.M{color:#75beff}.ic.w{color:#ccc}.ic.v{color:#75beff}
+.panel{height:min(34vh,260px);flex:none;border-top:1px solid #80808059;display:flex;flex-direction:column;background:#1e1e1e}
+.panel.collapsed{height:35px}
+.panel.collapsed .pbody{display:none}
+.ptabs{display:flex;align-items:center;height:35px;padding:0 8px;gap:4px;flex:none}
+.pt{background:none;border:0;border-bottom:1px solid transparent;color:#969696;font-size:11px;letter-spacing:.03em;padding:6px 8px;cursor:pointer;height:100%}
+.pt.on{color:#e7e7e7;border-bottom-color:#e7e7e7}
+.pbody{flex:1;overflow:auto;padding:6px 14px 10px;font-family:Consolas,'Cascadia Code',Menlo,'DejaVu Sans Mono',monospace;font-size:13px;line-height:1.45;white-space:pre-wrap;word-break:break-word;background:#1e1e1e}
+textarea.pbody{border:0;resize:none;outline:0;width:100%;color:#cccccc}
+.pbody[hidden]{display:none}
+.o-err{color:#f48771}.o-dim{color:#858585}.o-info{color:#569cd6}.o-ok{color:#89d185}
+.status{height:22px;flex:none;background:#007acc;color:#fff;display:flex;align-items:center;font-size:12px;padding:0 10px;gap:14px;white-space:nowrap;overflow:hidden}
+.status .sp{flex:1}
+.status.busy{background:#ca5100}
+.menu{position:absolute;left:52px;bottom:30px;background:#252526;border:1px solid #454545;box-shadow:0 2px 10px #000b;z-index:30;min-width:210px;padding:4px 0}
+.menu[hidden]{display:none}
+.menu button{display:block;width:100%;text-align:left;background:none;border:0;color:#ccc;padding:7px 16px;cursor:pointer;font-size:13px}
+.menu button:hover{background:#04395e;color:#fff}
+.menu hr{border:0;border-top:1px solid #454545;margin:4px 0}
+@media(max-width:700px){
+  .act{width:42px}.ab{width:42px;height:44px}.ab svg{width:23px;height:23px}
+  .side{position:absolute;left:42px;top:0;bottom:22px;box-shadow:4px 0 12px #0008}
+  .menu{left:46px}
+  .status .opt{display:none}
+}
+</style>
+</head>
+<body>
+<div id="sky">
+  <i class="comet" style="--t:4%;--l:70%;--d:7s;--s:0s;--w:150px"></i>
+  <i class="comet" style="--t:12%;--l:96%;--d:9s;--s:2.5s;--w:110px"></i>
+  <i class="comet" style="--t:38%;--l:105%;--d:8s;--s:5s;--w:170px"></i>
+  <i class="comet" style="--t:-3%;--l:40%;--d:10s;--s:1s;--w:90px"></i>
+  <i class="comet" style="--t:55%;--l:110%;--d:11s;--s:7s;--w:130px"></i>
+  <i class="comet" style="--t:22%;--l:85%;--d:12s;--s:3.5s;--w:70px"></i>
+</div>
+<main id="app"></main>
+
+<script>
+const SITE='питон онлайн';
+const PYBASE='https://cdn.jsdelivr.net/pyodide/v0.26.4/full';
+const STAR='<svg viewBox="0 0 100 100"><path d="M50 0 L61 40 L100 50 L61 60 L50 100 L39 60 L0 50 L39 40 Z"/></svg>';
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const KEY='py_v1';
+const SAMPLE='# Добро пожаловать! Нажмите ▶ или Ctrl+Enter, чтобы запустить.\nname = "мир"\nprint(f"Привет, {name}!")\n\ndef fib(n):\n    a, b = 0, 1\n    for _ in range(n):\n        yield a\n        a, b = b, a + b\n\nprint(list(fib(10)))\n';
+let S={name:'',gender:'',lastGreet:-1,files:[{name:'main.py',content:SAMPLE}],open:['main.py'],active:'main.py',fs:14};
+try{const d=JSON.parse(localStorage.getItem(KEY)||'null');if(d)S=Object.assign(S,d)}catch(e){}
+if(!S.files||!S.files.length){S.files=[{name:'main.py',content:SAMPLE}];S.open=['main.py'];S.active='main.py'}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+let timers=[],ACT={};
+const clearT=()=>{timers.forEach(t=>{clearInterval(t);clearTimeout(t)});timers=[]};
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+function view(html,light){document.body.classList.toggle('light',!!light);document.body.classList.remove('ide-on');app.className='';app.innerHTML='<div class="screen">'+html+'</div>';window.scrollTo(0,0)}
+function go(fn,...a){clearT();fn(...a)}
+
+/* ---------- INTRO ---------- */
+let tmpGender='';
+function intro(skipLogo){
+  document.body.classList.remove('light','ide-on');app.className='';
+  app.innerHTML='<div class="screen intro'+(skipLogo?'':' logo')+'" id="intro"><div class="orb">'+STAR+'</div><div id="bub"></div></div>';
+  if(skipLogo)bubble('gender');
+  else timers.push(setTimeout(()=>{$('#intro').classList.remove('logo');timers.push(setTimeout(()=>bubble('hello'),700))},1600));
+}
+function bubble(step){
+  const b=$('#bub');if(!b)return;
+  if(step==='hello')b.innerHTML='<div class="bubble">Привет! Здесь можно писать код на Python и сразу его запускать.</div><button class="btn ghost late" data-act="skip">Скип</button>';
+  if(step==='gender')b.innerHTML='<div class="bubble">Выберите ваш пол</div><div class="row center fade"><button class="round" data-act="gender" data-g="m">М</button><button class="round" data-act="gender" data-g="f">Ж</button></div>';
+  if(step==='name'){
+    b.innerHTML='<div class="bubble">Как вас зовут?</div><div class="fade" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px"><input class="name-in" id="nm" data-enter="setname" maxlength="30" autocomplete="off" placeholder="'+(tmpGender==='f'?'Алёна':'Саня')+'"><button class="btn" data-act="setname">Готово</button></div>';
+    setTimeout(()=>{const n=$('#nm');n&&n.focus()},500);
+  }
+}
+ACT.skip=()=>bubble('gender');
+ACT.gender=t=>{tmpGender=t.dataset.g;bubble('name')};
+ACT.setname=()=>{const v=($('#nm').value||'').trim();if(!v){toast('Напишите, как вас зовут');return}S.name=v;S.gender=tmpGender;save();go(greet)};
+
+/* ---------- GREETING ---------- */
+function greet(){
+  const f=S.gender==='f';
+  const list=[['Привет,','!'],[(f?'Рада':'Рад')+' тебя видеть,','!'],['С возвращением,','!'],['Здравствуй,','!'],['Добро пожаловать,','!'],['Вот и ты,','!'],['Хорошего дня,','!'],['Время кодить,','!'],['Сегодня напишем что-нибудь крутое,','!'],['Отличный день для кода,','!']];
+  let i;do{i=Math.floor(Math.random()*list.length)}while(i===S.lastGreet&&list.length>1);
+  S.lastGreet=i;save();
+  view('<div class="greet"><h1>'+esc(list[i][0])+'<span>'+esc(S.name)+'</span>'+list[i][1]+'</h1><button class="btn dark" data-act="home">Начнём</button></div>',true);
+}
+ACT.home=()=>go(ide);
+ACT.rename=()=>{S.name='';S.gender='';save();killWorker();go(intro,true)};
+
+/* ================= PYTHON HIGHLIGHT ================= */
+const CONTROL=new Set('if elif else for while return import from as try except finally with raise pass break continue yield assert del async await match case'.split(' '));
+const STORAGE=new Set('def class lambda global nonlocal None True False and or not in is'.split(' '));
+const TYPES=new Set('int str float bool list dict set tuple object bytes range type complex frozenset Exception ValueError TypeError KeyError IndexError NameError ZeroDivisionError AttributeError ImportError RuntimeError StopIteration OSError'.split(' '));
+const RX=/(#[^\n]*)|((?:[rRbBuUfF]{1,2})?(?:'''[\s\S]*?(?:'''|$)|"""[\s\S]*?(?:"""|$)|'(?:\\.|[^'\\\n])*'?|"(?:\\.|[^"\\\n])*"?))|(\b\d[\d_]*\.?\d*(?:[eE][+-]?\d+)?\b|\.\d+)|(@[\w.]+)|([A-Za-z_\u0400-\u04FF]\w*)|([\s\S])/g;
+function highlight(src){
+  let out='',m,prev='',prevTok='';
+  RX.lastIndex=0;
+  while((m=RX.exec(src))){
+    const t=m[0];
+    if(m[1]){out+='<span class="cm">'+esc(t)+'</span>';continue}
+    if(m[2]){out+='<span class="str">'+esc(t)+'</span>';prev='';prevTok='str';continue}
+    if(m[3]){out+='<span class="num">'+esc(t)+'</span>';prevTok='num';continue}
+    if(m[4]){out+='<span class="dec">'+esc(t)+'</span>';continue}
+    if(m[5]){
+      let c='id';
+      const next=src[RX.lastIndex];
+      if(CONTROL.has(t))c='k';
+      else if(STORAGE.has(t))c='s2';
+      else if(prev==='def')c='fn';
+      else if(prev==='class')c='cls';
+      else if(next==='(')c=TYPES.has(t)?'cls':'fn';
+      else if(TYPES.has(t)||(/^[A-Z]/.test(t)&&prevTok!=='.'&&!/^[A-Z_0-9]+$/.test(t)))c='cls';
+      out+='<span class="'+c+'">'+esc(t)+'</span>';
+      prev=t;prevTok='id';continue;
+    }
+    out+=esc(t);
+    if(!/\s/.test(t)){prev='';prevTok=t}
+  }
+  return out;
+}
+
+/* ================= COMPLETION DATA ================= */
+const CARET='\u0001';
+const FN=(n,sig,doc,k)=>({l:n,ins:n+'('+(sig===''?'':CARET)+')'+(sig===''?CARET:''),k:k||'f',d:n+'('+sig+')',doc});
+const ATTR=(n,doc,k)=>({l:n,ins:n,k:k||'v',d:'',doc});
+const B=[['print','*значения, sep=" ", end="\\n"','Вывести значения на экран'],['input','подсказка=""','Прочитать строку (данные берутся из вкладки «Ввод»)'],['len','x','Длина строки, списка, словаря…'],['range','старт, стоп, шаг','Последовательность чисел'],['int','x','Преобразовать в целое число'],['float','x','Преобразовать в дробное число'],['str','x','Преобразовать в строку'],['bool','x','Преобразовать в True/False'],['list','iterable','Создать список'],['dict','','Создать словарь'],['set','iterable','Создать множество'],['tuple','iterable','Создать кортеж'],['abs','x','Модуль числа'],['sum','iterable, start=0','Сумма элементов'],['min','iterable','Минимальный элемент'],['max','iterable','Максимальный элемент'],['sorted','iterable, key=None, reverse=False','Новый отсортированный список'],['reversed','seq','Итератор в обратном порядке'],['enumerate','iterable, start=0','Пары (индекс, элемент)'],['zip','*iterables','Склеить итерируемые по элементам'],['map','функция, iterable','Применить функцию к каждому элементу'],['filter','функция, iterable','Оставить элементы, для которых функция истинна'],['round','число, знаков=0','Округлить число'],['type','obj','Тип объекта'],['isinstance','obj, класс','Проверить тип объекта'],['any','iterable','Есть ли хоть один истинный элемент'],['all','iterable','Все ли элементы истинны'],['chr','код','Символ по коду'],['ord','символ','Код символа'],['divmod','a, b','Частное и остаток'],['pow','x, y','Возведение в степень'],['open','файл, режим="r"','Открыть файл'],['dir','obj','Список имён объекта'],['repr','obj','Строковое представление объекта'],['hex','x','Число в шестнадцатеричном виде'],['bin','x','Число в двоичном виде'],['id','obj','Идентификатор объекта'],['hasattr','obj, имя','Есть ли у объекта атрибут'],['getattr','obj, имя','Получить атрибут по имени'],['callable','obj','Можно ли вызвать объект'],['format','x, формат','Отформатировать значение'],['iter','obj','Получить итератор'],['next','итератор','Следующий элемент итератора'],['slice','стоп','Объект среза'],['exit','','Завершить программу']].map(a=>FN(a[0],a[1],a[2]));
+const KWS='and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield True False None match case'.split(' ').map(k=>({l:k,ins:k,k:'k',d:'',doc:'Ключевое слово'}));
+const SN=(l,ins,doc)=>({l,ins,k:'s',d:'сниппет',doc});
+const SNIPS=[SN('for','for i in range('+CARET+'):\n    ','Цикл for по range'),SN('forin','for item in '+CARET+':\n    ','Цикл for по коллекции'),SN('while','while '+CARET+':\n    ','Цикл while'),SN('if','if '+CARET+':\n    ','Условие'),SN('ifelse','if '+CARET+':\n    \nelse:\n    ','Условие с else'),SN('elif','elif '+CARET+':\n    ','Ветка elif'),SN('def','def '+CARET+'():\n    ','Функция'),SN('class','class '+CARET+':\n    def __init__(self):\n        ','Класс'),SN('try','try:\n    '+CARET+'\nexcept Exception as e:\n    print(e)','Обработка исключений'),SN('with','with open('+CARET+') as f:\n    ','Контекстный менеджер'),SN('main','if __name__ == "__main__":\n    '+CARET,'Точка входа'),SN('lambda','lambda '+CARET+': ','Анонимная функция'),SN('import','import '+CARET,'Импорт модуля')];
+const SNL=new Set(SNIPS.map(s=>s.l));
+const M=(arr,k)=>arr.map(a=>a.length>2?FN(a[0],a[1],a[2],k||'m'):ATTR(a[0],a[1],'m')).map(x=>x);
+const MS=(arr)=>arr.map(a=>({...FN(a[0],a[1],a[2],'m'),d:'str.'+a[0]+'('+a[1]+')'}));
+const STRM=MS([['upper','','В верхний регистр'],['lower','','В нижний регистр'],['strip','','Убрать пробелы по краям'],['lstrip','','Убрать пробелы слева'],['rstrip','','Убрать пробелы справа'],['split','sep=None','Разбить строку в список'],['join','iterable','Склеить элементы через эту строку'],['replace','старое, новое','Заменить подстроку'],['find','подстрока','Индекс подстроки или -1'],['index','подстрока','Индекс подстроки (ошибка, если нет)'],['startswith','префикс','Начинается ли с…'],['endswith','суффикс','Заканчивается ли на…'],['format','*args, **kwargs','Подставить значения в {}'],['title','','Каждое слово с заглавной'],['capitalize','','Первая буква заглавная'],['isdigit','','Только цифры?'],['isalpha','','Только буквы?'],['isalnum','','Буквы и цифры?'],['isupper','','Все буквы заглавные?'],['islower','','Все буквы строчные?'],['count','подстрока','Сколько раз встречается'],['center','ширина','Выровнять по центру'],['zfill','ширина','Дополнить нулями слева'],['splitlines','','Разбить по строкам'],['swapcase','','Поменять регистр'],['encode','кодировка="utf-8"','В байты']]);
+const LS=(arr)=>arr.map(a=>({...FN(a[0],a[1],a[2],'m'),d:'list.'+a[0]+'('+a[1]+')'}));
+const LISTM=LS([['append','x','Добавить в конец'],['extend','iterable','Добавить все элементы'],['insert','i, x','Вставить на позицию'],['remove','x','Удалить первое вхождение'],['pop','i=-1','Удалить и вернуть элемент'],['sort','key=None, reverse=False','Отсортировать на месте'],['reverse','','Развернуть на месте'],['index','x','Индекс элемента'],['count','x','Сколько раз встречается'],['clear','','Очистить список'],['copy','','Копия списка']]);
+const DS=(arr)=>arr.map(a=>({...FN(a[0],a[1],a[2],'m'),d:'dict.'+a[0]+'('+a[1]+')'}));
+const DICTM=DS([['keys','','Ключи'],['values','','Значения'],['items','','Пары (ключ, значение)'],['get','ключ, по_умолчанию=None','Значение по ключу'],['update','другой','Обновить словарь'],['setdefault','ключ, значение','Взять или создать'],['popitem','','Удалить последнюю пару']]);
+const SETM=arr=>arr.map(a=>({...FN(a[0],a[1],a[2],'m'),d:'set.'+a[0]+'('+a[1]+')'}));
+const SETS=SETM([['add','x','Добавить элемент'],['discard','x','Удалить, если есть'],['union','other','Объединение'],['intersection','other','Пересечение'],['difference','other','Разность'],['issubset','other','Является ли подмножеством']]);
+const METHODS=[...STRM,...LISTM,...DICTM,...SETS];
+const MODS={
+ math:[['sqrt','x','Квадратный корень'],['pow','x, y','Степень'],['sin','x','Синус (радианы)'],['cos','x','Косинус'],['tan','x','Тангенс'],['floor','x','Округлить вниз'],['ceil','x','Округлить вверх'],['factorial','n','Факториал'],['gcd','a, b','НОД'],['log','x, base=e','Логарифм'],['log2','x','Логарифм по основанию 2'],['log10','x','Десятичный логарифм'],['exp','x','e в степени x'],['radians','x','Градусы в радианы'],['degrees','x','Радианы в градусы'],['isqrt','n','Целый корень'],['hypot','x, y','Длина гипотенузы'],['comb','n, k','Сочетания'],['perm','n, k','Размещения'],['fabs','x','Модуль'],['pi','π'],['e','Число e'],['inf','Бесконечность'],['tau','2π']],
+ random:[['random','','Число от 0 до 1'],['randint','a, b','Целое от a до b включительно'],['choice','seq','Случайный элемент'],['choices','seq, k=1','Несколько с повторами'],['shuffle','list','Перемешать список'],['sample','seq, k','Выборка без повторов'],['uniform','a, b','Дробное от a до b'],['seed','a=None','Задать seed'],['randrange','старт, стоп','Случайное из range']],
+ time:[['time','','Секунды с 1970 года'],['sleep','сек','Пауза'],['perf_counter','','Точный таймер'],['strftime','формат','Дата/время строкой'],['localtime','','Местное время']],
+ datetime:[['datetime','','Дата и время'],['date','','Дата'],['time','','Время'],['timedelta','days=0','Разница во времени'],['timezone','','Часовой пояс']],
+ os:[['listdir','путь="."','Список файлов'],['getcwd','','Текущая папка'],['remove','путь','Удалить файл'],['mkdir','путь','Создать папку'],['makedirs','путь','Создать папки'],['path','','Работа с путями'],['environ','','Переменные окружения']],
+ sys:[['argv','','Аргументы'],['exit','','Выйти'],['version','','Версия Python'],['platform','','Платформа'],['path','','Пути поиска модулей'],['stdout','','Поток вывода'],['stdin','','Поток ввода']],
+ json:[['dumps','obj, indent=None','Объект в JSON-строку'],['loads','строка','JSON-строка в объект'],['dump','obj, файл','Записать JSON в файл'],['load','файл','Прочитать JSON из файла']],
+ re:[['match','шаблон, строка','Совпадение в начале'],['search','шаблон, строка','Первое совпадение'],['findall','шаблон, строка','Все совпадения'],['sub','шаблон, замена, строка','Заменить по шаблону'],['split','шаблон, строка','Разбить по шаблону'],['compile','шаблон','Скомпилировать шаблон'],['fullmatch','шаблон, строка','Полное совпадение'],['finditer','шаблон, строка','Итератор совпадений']],
+ collections:[['Counter','iterable','Подсчёт элементов'],['defaultdict','фабрика','Словарь со значением по умолчанию'],['deque','iterable','Двусторонняя очередь'],['OrderedDict','','Упорядоченный словарь'],['namedtuple','имя, поля','Именованный кортеж']],
+ itertools:[['permutations','iterable, r=None','Перестановки'],['combinations','iterable, r','Сочетания'],['product','*iterables','Декартово произведение'],['chain','*iterables','Склеить итерируемые'],['count','start=0','Бесконечный счётчик'],['cycle','iterable','Бесконечный повтор'],['groupby','iterable, key=None','Группировка'],['accumulate','iterable','Накопление'],['islice','iterable, stop','Срез итератора']],
+ string:[['ascii_letters','Все латинские буквы'],['ascii_lowercase','Строчные латинские'],['ascii_uppercase','Заглавные латинские'],['digits','Цифры'],['punctuation','Знаки препинания']],
+ statistics:[['mean','data','Среднее'],['median','data','Медиана'],['mode','data','Мода'],['stdev','data','Стандартное отклонение']],
+ functools:[['reduce','функция, iterable','Свёртка'],['lru_cache','','Кэш результатов'],['partial','функция, *args','Частичное применение']],
+ numpy:[['array','список','Создать массив'],['arange','стоп','Массив чисел'],['zeros','форма','Массив нулей'],['ones','форма','Массив единиц'],['linspace','старт, стоп, n','Равномерная сетка'],['mean','a','Среднее'],['sum','a','Сумма'],['dot','a, b','Скалярное произведение'],['sqrt','a','Корень'],['random','','Случайные числа']]
+};
+const MODMEM={};
+for(const k in MODS)MODMEM[k]=MODS[k].map(a=>a.length>2?FN(a[0],a[1],a[2],'m'):ATTR(a[0],a[1],'m'));
+const MODNAMES=Object.keys(MODS).concat(['pandas','typing','pathlib','copy','heapq','bisect','decimal','fractions','csv','textwrap','dataclasses','enum','abc','operator','io']).filter((x,i,a)=>a.indexOf(x)===i);
+const MODITEMS=MODNAMES.map(n=>({l:n,ins:n,k:'M',d:'модуль',doc:'Модуль '+n}));
+
+function docWords(text){
+  const set=new Set(),r=/[A-Za-z_\u0400-\u04FF]\w{2,}/g;let m;
+  while((m=r.exec(text)))set.add(m[0]);
+  return set;
+}
+function ctxAt(text,pos){
+  const before=text.slice(0,pos),ls=before.lastIndexOf('\n')+1,line=before.slice(ls);
+  const prefix=(/([A-Za-z_\u0400-\u04FF]\w*)?$/.exec(line)||[])[1]||'';
+  const rest=line.slice(0,line.length-prefix.length);
+  let obj=null;
+  if(rest.endsWith('.')){
+    const m=/([A-Za-z_]\w*)\.$/.exec(rest);
+    obj=m?m[1]:/["']\.$/.test(rest)?'str':/\]\.$/.test(rest)?'list':/\}\.$/.test(rest)?'dict':'?';
+  }
+  return {prefix,rest,obj,line};
+}
+function inStrOrComment(text,pos){
+  const t=text.slice(0,pos);let m,last=null;
+  RX.lastIndex=0;
+  const r=new RegExp(RX.source,'g');
+  while((m=r.exec(t))){last=m}
+  if(!last||last.index+last[0].length!==t.length)return false;
+  if(last[1])return true;
+  if(last[2]){const s=last[2].replace(/^[rRbBuUfF]+/,'');const q=s.startsWith('"""')||s.startsWith("'''")?s.slice(0,3):s[0];return !(s.length>=2*q.length&&s.endsWith(q)&&s.length>=q.length*2)}
+  return false;
+}
+function candidates(text,pos){
+  const c=ctxAt(text,pos);
+  let list=[];
+  if(c.obj){
+    if(MODMEM[c.obj])list=MODMEM[c.obj];
+    else if(c.obj==='self'){const r=/self\.(\w+)/g;let m;const s=new Set();while((m=r.exec(text)))s.add(m[1]);list=[...s].map(n=>ATTR(n,'Атрибут объекта','v'))}
+    else list=METHODS;
+  }else if(/^\s*(import)\s+[\w., ]*$/.test(c.rest)||/^\s*from\s+$/.test(c.rest)){list=MODITEMS}
+  else if(/^\s*from\s+(\w+)\s+import\s+[\w, ]*$/.test(c.rest)){const mm=/^\s*from\s+(\w+)/.exec(c.rest)[1];list=(MODMEM[mm]||[]).map(x=>({...x,ins:x.l}))}
+  else{
+    const imported=[];text.replace(/^\s*import\s+([\w., ]+)/gm,(_,a)=>{a.split(',').forEach(x=>{const n=x.trim().split(/\s+as\s+/).pop();if(n)imported.push(n)})});
+    text.replace(/^\s*from\s+\w+\s+import\s+([\w., ]+)/gm,(_,a)=>{a.split(',').forEach(x=>{const n=x.trim().split(/\s+as\s+/).pop();if(n)imported.push(n)})});
+    list=[...SNIPS,...KWS.filter(k=>!SNL.has(k.l)),...B,...imported.map(n=>({l:n,ins:n,k:'M',d:'импорт',doc:''}))];
+    const known=new Set(list.map(x=>x.l));
+    const w=docWords(text);
+    // функции и классы из документа
+    const defs=new Map();text.replace(/^\s*(?:async\s+)?def\s+(\w+)\s*\(([^)]*)\)/gm,(_,n,a)=>{defs.set(n,FN(n,a.replace(/\bself\b,?\s*/,''),'Ваша функция'))});
+    text.replace(/^\s*class\s+(\w+)/gm,(_,n)=>{defs.set(n,{l:n,ins:n+'('+CARET+')',k:'c',d:'класс',doc:'Ваш класс'})});
+    defs.forEach(v=>{list.push(v);known.add(v.l)});
+    w.forEach(n=>{if(!known.has(n)&&n!==c.prefix)list.push({l:n,ins:n,k:'w',d:'',doc:''})});
+  }
+  const p=c.prefix.toLowerCase();
+  if(!c.obj&&!p)return {ctx:c,items:[]};
+  let items=list.filter(x=>x.l.toLowerCase().startsWith(p));
+  if(p.length>=2)items=items.concat(list.filter(x=>!x.l.toLowerCase().startsWith(p)&&x.l.toLowerCase().includes(p)));
+  const seen=new Set();items=items.filter(x=>{const k=x.l+'|'+x.d;if(seen.has(k))return false;seen.add(k);return true});
+  if(items.length===1&&items[0].l===c.prefix&&!c.obj)items=[];
+  return {ctx:c,items:items.slice(0,40)};
+}
+
+/* ================= IDE ================= */
+const PAIRS={'(':')','[':']','{':'}','"':'"',"'":"'"};
+let ta,hl,gut,scroll,sug,sugItems=[],sugIdx=0,sugCtx=null,suppress=false,CW=8,LH=21,PADT=8,PADL=12;
+const curFile=()=>S.files.find(f=>f.name===S.active)||S.files[0];
+
+function ide(){
+  document.body.classList.remove('light');document.body.classList.add('ide-on');app.className='ide';
+  const ic={
+    files:'<svg viewBox="0 0 24 24"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5"/></svg>',
+    run:'<svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></svg>',
+    gear:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></svg>'
+  };
+  app.innerHTML='<div class="vs" id="vs">'
+   +'<div class="vsmain">'
+   +'<nav class="act"><button class="ab on" id="abfiles" data-act="toggleside" title="Проводник">'+ic.files+'</button><button class="ab" data-act="run" title="Запустить (Ctrl+Enter)">'+ic.run+'</button><span class="sp"></span><button class="ab" data-act="gear" title="Настройки">'+ic.gear+'</button></nav>'
+   +'<aside class="side" id="side"><div class="sh">ПРОВОДНИК</div><div class="sec"><span>▾ '+esc(SITE.toUpperCase())+'</span><button class="mini" data-act="newfile" title="Новый файл">＋</button></div><div id="flist"></div></aside>'
+   +'<section class="col"><div class="tabs"><div class="tabl" id="tabl"></div><button class="runbtn" id="runbtn" data-act="run" title="Запустить (Ctrl+Enter)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12-7.5z"/></svg></button></div>'
+   +'<div class="crumb" id="crumb"></div>'
+   +'<div class="edwrap" id="edwrap"><div class="scroll" id="scroll"><div class="gut" id="gut"></div><div class="code"><pre class="hl" id="hl"></pre><textarea id="ta" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" aria-label="Редактор кода"></textarea></div></div><div class="sug" id="sug" hidden></div></div>'
+   +'<div class="panel" id="panel"><div class="ptabs"><button class="pt on" data-act="ptab" data-p="out">ВЫВОД</button><button class="pt" data-act="ptab" data-p="in">ВВОД</button><span class="sp"></span><button class="mini" data-act="clearout" title="Очистить вывод" style="font-size:12px">Очистить</button><button class="mini" data-act="togglepanel" id="pcol" title="Свернуть панель">⌄</button></div><div class="pbody" id="out"></div><textarea class="pbody" id="stdin" hidden placeholder="Данные для input(): по одной строке на каждый вызов" spellcheck="false"></textarea></div>'
+   +'</section></div>'
+   +'<div class="status" id="status"><span id="stpy">Python: загрузка…</span><span class="sp"></span><span id="stpos">Стр 1, стлб 1</span><span class="opt">Пробелы: 4</span><span class="opt">UTF-8</span><span>Python</span></div>'
+   +'<div class="menu" id="menu" hidden><button data-act="fsz" data-d="1">Крупнее шрифт</button><button data-act="fsz" data-d="-1">Мельче шрифт</button><hr><button data-act="rename">Сменить имя ('+esc(S.name)+')</button><button data-act="resetfiles">Сбросить файлы</button></div>'
+   +'</div>';
+  ta=$('#ta');hl=$('#hl');gut=$('#gut');scroll=$('#scroll');sug=$('#sug');
+  applyFs();
+  if(window.innerWidth<=700)$('#side').classList.add('hide');
+  bindEditor();renderFiles();renderTabs();openFile(S.active,true);
+  out('Привет, '+S.name+'! Нажмите ▶ или Ctrl+Enter, чтобы запустить файл.\n','o-dim');
+  startWorker();
+}
+function applyFs(){
+  const vs=$('#vs');if(!vs)return;
+  const fs=Math.max(10,Math.min(26,S.fs||14));S.fs=fs;
+  vs.style.setProperty('--fs',fs+'px');LH=Math.round(fs*1.5);vs.style.setProperty('--lh',LH+'px');
+  const sp=document.createElement('span');sp.style.cssText='position:absolute;visibility:hidden;white-space:pre;font:'+fs+'px Consolas,"Cascadia Code","SF Mono",Menlo,"DejaVu Sans Mono",monospace';sp.textContent='x'.repeat(100);
+  document.body.appendChild(sp);CW=sp.getBoundingClientRect().width/100;sp.remove();
+  save();
+}
+ACT.fsz=t=>{S.fs=(S.fs||14)+(+t.dataset.d);applyFs();$('#menu').hidden=true;refresh()};
+ACT.gear=()=>{const m=$('#menu');m.hidden=!m.hidden};
+ACT.resetfiles=()=>{S.files=[{name:'main.py',content:SAMPLE}];S.open=['main.py'];S.active='main.py';save();$('#menu').hidden=true;renderFiles();renderTabs();openFile('main.py',true);toast('Файлы сброшены')};
+ACT.toggleside=()=>{$('#side').classList.toggle('hide');$('#abfiles').classList.toggle('on',!$('#side').classList.contains('hide'))};
+ACT.togglepanel=()=>{const p=$('#panel');p.classList.toggle('collapsed');$('#pcol').textContent=p.classList.contains('collapsed')?'⌃':'⌄'};
+ACT.ptab=t=>{
+  document.querySelectorAll('.pt').forEach(x=>x.classList.toggle('on',x===t));
+  const isIn=t.dataset.p==='in';$('#out').hidden=isIn;$('#stdin').hidden=!isIn;
+  $('#panel').classList.remove('collapsed');
+};
+ACT.clearout=()=>{$('#out').textContent=''};
+
+/* ----- files & tabs ----- */
+function renderFiles(){
+  $('#flist').innerHTML=S.files.map(f=>'<div class="fi'+(f.name===S.active?' on':'')+'" data-act="openf" data-n="'+esc(f.name)+'"><span class="pyi"></span><span class="nm">'+esc(f.name)+'</span><button class="x" data-act="delf" data-n="'+esc(f.name)+'" aria-label="Удалить">×</button></div>').join('');
+}
+function renderTabs(){
+  $('#tabl').innerHTML=S.open.map(n=>'<div class="tab'+(n===S.active?' on':'')+'" data-act="openf" data-n="'+esc(n)+'"><span class="pyi"></span><span>'+esc(n)+'</span><button class="x" data-act="closetab" data-n="'+esc(n)+'" aria-label="Закрыть">×</button></div>').join('');
+  $('#crumb').textContent=S.active;
+}
+function openFile(name,force){
+  if(!force&&name===S.active)return;
+  S.active=name;if(!S.open.includes(name))S.open.push(name);save();
+  ta.value=curFile().content;refresh();ta.setSelectionRange(0,0);scroll.scrollTop=0;scroll.scrollLeft=0;
+  renderFiles();renderTabs();hideSug();updatePos();
+  if(window.innerWidth<=700)$('#side').classList.add('hide');
+}
+ACT.openf=(t,e)=>{if(e.target.closest('.x')&&t.dataset.act==='openf'&&e.target.closest('.x').dataset.act!=='openf')return;openFile(t.dataset.n)};
+ACT.closetab=(t,e)=>{
+  e.stopPropagation();const n=t.dataset.n;
+  if(S.open.length<=1){toast('Нельзя закрыть последнюю вкладку');return}
+  const i=S.open.indexOf(n);S.open.splice(i,1);
+  if(S.active===n)S.active=S.open[Math.max(0,i-1)];
+  save();openFile(S.active,true);
+};
+ACT.delf=(t,e)=>{
+  e.stopPropagation();const n=t.dataset.n;
+  if(S.files.length<=1){toast('Должен остаться хотя бы один файл');return}
+  S.files=S.files.filter(f=>f.name!==n);S.open=S.open.filter(x=>x!==n);
+  if(!S.open.length)S.open=[S.files[0].name];
+  if(S.active===n)S.active=S.open[0];
+  save();openFile(S.active,true);
+};
+ACT.newfile=()=>{
+  const l=$('#flist');if(l.querySelector('.newf'))return;
+  $('#side').classList.remove('hide');
+  const i=document.createElement('input');i.className='newf';i.placeholder='имя.py';i.autocapitalize='off';
+  l.appendChild(i);i.focus();
+  const done=ok=>{
+    let n=i.value.trim();i.remove();
+    if(!ok||!n)return;
+    if(!/\.[A-Za-z0-9]+$/.test(n))n+='.py';
+    if(/[\\/]/.test(n)){toast('В имени не должно быть / или \\');return}
+    if(S.files.some(f=>f.name===n)){toast('Такой файл уже есть');return}
+    S.files.push({name:n,content:''});save();openFile(n,true);
+  };
+  i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();done(true)}else if(e.key==='Escape')done(false)});
+  i.addEventListener('blur',()=>{if(i.isConnected)done(true)});
+};
+
+/* ----- editor core ----- */
+function refresh(){
+  const v=ta.value;
+  hl.innerHTML=highlight(v)+'\n ';
+  const n=v.split('\n').length;let g='';for(let i=1;i<=n;i++)g+=i+'\n';gut.textContent=g.slice(0,-1);
+}
+function ins(text){
+  ta.focus();
+  if(!document.execCommand('insertText',false,text)){
+    const s=ta.selectionStart,e=ta.selectionEnd;ta.setRangeText(text,s,e,'end');ta.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+}
+function caretXY(){
+  const v=ta.value,p=ta.selectionStart,b=v.slice(0,p),line=b.split('\n').length-1,col=p-(b.lastIndexOf('\n')+1);
+  return {line,col,y:PADT+line*LH,x:PADL+col*CW};
+}
+function ensureVisible(){
+  const c=caretXY(),sc=scroll,gw=gut.offsetWidth;
+  if(c.y<sc.scrollTop)sc.scrollTop=c.y-4;
+  else if(c.y+LH>sc.scrollTop+sc.clientHeight-4)sc.scrollTop=c.y+LH-sc.clientHeight+8;
+  const cx=gw+c.x;
+  if(cx<sc.scrollLeft+gw)sc.scrollLeft=Math.max(0,cx-gw-30);
+  else if(cx>sc.scrollLeft+sc.clientWidth-20)sc.scrollLeft=cx-sc.clientWidth+60;
+}
+function updatePos(){const c=caretXY();const s=$('#stpos');if(s)s.textContent='Стр '+(c.line+1)+', стлб '+(c.col+1)}
+function lineRange(){
+  const v=ta.value,s=ta.selectionStart,e=ta.selectionEnd;
+  const a=v.lastIndexOf('\n',s-1)+1;let b=v.indexOf('\n',e>s&&v[e-1]==='\n'?e-1:e);if(b<0)b=v.length;
+  return {a,b,text:v.slice(a,b)};
+}
+function replaceRange(a,b,text,selA,selB){
+  ta.focus();ta.setSelectionRange(a,b);ins(text);
+  ta.setSelectionRange(selA,selB);
+}
+function indentLines(dedent){
+  const s=ta.selectionStart,e=ta.selectionEnd,{a,b,text}=lineRange();
+  const lines=text.split('\n');let dS=0,dE=0;
+  const res=lines.map((l,i)=>{
+    if(!dedent){if(l.trim()==='' &&lines.length>1)return l;if(i===0)dS=4;dE+=4;return '    '+l}
+    const m=/^( {1,4}|\t)/.exec(l);if(!m)return l;if(i===0)dS=-m[0].length;dE-=m[0].length;return l.slice(m[0].length);
+  });
+  const nt=res.join('\n');
+  replaceRange(a,b,nt,Math.max(a,s+dS),Math.max(a,e+dE));
+}
+function toggleComment(){
+  const s=ta.selectionStart,e=ta.selectionEnd,{a,b,text}=lineRange();
+  const lines=text.split('\n');const all=lines.filter(l=>l.trim()).every(l=>/^\s*#/.test(l));
+  let dE=0;
+  const res=lines.map(l=>{
+    if(!l.trim())return l;
+    if(all){const m=/^(\s*)# ?/.exec(l);dE-=m[0].length-m[1].length;return l.replace(/^(\s*)# ?/,'$1')}
+    dE+=2;return l.replace(/^(\s*)/,'$1# ');
+  });
+  replaceRange(a,b,res.join('\n'),s+(all?-1:2)>=a?Math.max(a,s+(all?-2:2)):a,Math.max(a,e+dE));
+}
+function newline(){
+  const v=ta.value,s=ta.selectionStart,ls=v.lastIndexOf('\n',s-1)+1,line=v.slice(ls,s);
+  const ind=/^[ \t]*/.exec(line)[0];
+  const stripped=line.replace(/#.*$/,'').trimEnd();
+  const extra=/:$/.test(stripped)?'    ':'';
+  const prev=v[s-1],next=v[s];
+  if(prev&&PAIRS[prev]&&PAIRS[prev]===next&&prev!=='"'&&prev!=="'"){
+    ins('\n'+ind+'    \n'+ind);ta.setSelectionRange(s+1+ind.length+4,s+1+ind.length+4);
+  }else ins('\n'+ind+extra);
+}
+function bindEditor(){
+  ta.addEventListener('input',()=>{
+    curFile().content=ta.value;save();refresh();updatePos();ensureVisible();
+    if(suppress)return;
+    const p=ta.selectionStart;
+    if(inStrOrComment(ta.value,p)){hideSug();return}
+    showSug(false);
+  });
+  ta.addEventListener('beforeinput',e=>{
+    const t=e.inputType,d=e.data,v=ta.value,s=ta.selectionStart,en=ta.selectionEnd;
+    if(t==='insertLineBreak'||t==='insertParagraph'){e.preventDefault();hideSug();newline();return}
+    if(t==='insertText'&&d&&d.length===1){
+      if(')]}'.includes(d)&&v[s]===d&&s===en){e.preventDefault();ta.setSelectionRange(s+1,s+1);hideSug();return}
+      if(PAIRS[d]){
+        if(s!==en){e.preventDefault();const sel=v.slice(s,en);ins(d+sel+PAIRS[d]);ta.setSelectionRange(s+1,s+1+sel.length);return}
+        const q=d==='"'||d==="'";
+        if(q){
+          if(v[s]===d){e.preventDefault();ta.setSelectionRange(s+1,s+1);return}
+          if(/\w/.test(v[s-1]||''))return;
+          if(v[s-1]===d&&v[s-2]===d)return;
+        }
+        if(v[s]&&!/[\s)\]},:;]/.test(v[s]))return;
+        e.preventDefault();ins(d+PAIRS[d]);ta.setSelectionRange(s+1,s+1);return;
+      }
+    }
+    if(t==='deleteContentBackward'&&s===en&&s>0){
+      const ls=v.lastIndexOf('\n',s-1)+1,before=v.slice(ls,s);
+      if(PAIRS[v[s-1]]&&PAIRS[v[s-1]]===v[s]){e.preventDefault();ta.setSelectionRange(s-1,s+1);document.execCommand('delete');return}
+      if(/^ +$/.test(before)&&before.length%4===0){e.preventDefault();ta.setSelectionRange(s-4,s);document.execCommand('delete');return}
+    }
+  });
+  ta.addEventListener('keydown',e=>{
+    const k=e.key,mod=e.ctrlKey||e.metaKey;
+    if(!sug.hidden){
+      if(k==='ArrowDown'){e.preventDefault();sugIdx=(sugIdx+1)%sugItems.length;drawSug();return}
+      if(k==='ArrowUp'){e.preventDefault();sugIdx=(sugIdx-1+sugItems.length)%sugItems.length;drawSug();return}
+      if(k==='Enter'||k==='Tab'){e.preventDefault();acceptSug(sugIdx);return}
+      if(k==='Escape'){e.preventDefault();hideSug();return}
+    }
+    if(mod&&k==='Enter'){e.preventDefault();ACT.run();return}
+    if(mod&&k==='/'){e.preventDefault();toggleComment();return}
+    if(mod&&k===' '){e.preventDefault();showSug(true);return}
+    if(k==='Tab'){
+      e.preventDefault();
+      const s=ta.selectionStart,en=ta.selectionEnd,v=ta.value;
+      if(e.shiftKey){indentLines(true);return}
+      if(s!==en&&v.slice(s,en).includes('\n')){indentLines(false);return}
+      const col=s-(v.lastIndexOf('\n',s-1)+1);ins(' '.repeat(4-col%4));return;
+    }
+    if(k==='ArrowLeft'||k==='ArrowRight'||k==='Home'||k==='End')hideSug();
+  });
+  ta.addEventListener('keyup',()=>{updatePos();});
+  ta.addEventListener('click',()=>{updatePos();hideSug()});
+  ta.addEventListener('blur',()=>setTimeout(hideSug,150));
+  ta.addEventListener('select',updatePos);
+  sug.addEventListener('mousedown',e=>e.preventDefault());
+  sug.addEventListener('pointerdown',e=>{const it=e.target.closest('.si');if(it){e.preventDefault();acceptSug(+it.dataset.i)}});
+  scroll.addEventListener('scroll',()=>{if(!sug.hidden)placeSug()});
+  document.addEventListener('keydown',gkey);
+  $('#edwrap').addEventListener('click',e=>{if(e.target===$('#edwrap')||e.target===scroll)ta.focus()});
+}
+function gkey(e){
+  if(!$('#vs'))return;
+  const mod=e.ctrlKey||e.metaKey;
+  if(e.key==='F5'){e.preventDefault();ACT.run()}
+  if(mod&&e.key.toLowerCase()==='s'){e.preventDefault();save();toast('Сохранено')}
+}
+/* ----- suggestions ----- */
+function showSug(force){
+  const r=candidates(ta.value,ta.selectionStart);
+  sugCtx=r.ctx;
+  if(!r.items.length||(!force&&!r.ctx.prefix&&!r.ctx.obj)){hideSug();return}
+  sugItems=r.items;sugIdx=0;sug.hidden=false;drawSug();placeSug();
+}
+function hideSug(){if(sug)sug.hidden=true;sugItems=[]}
+const KICON={f:'ƒ',m:'ƒ',k:'k',s:'▭',c:'C',M:'▦',w:'ab',v:'v'};
+function drawSug(){
+  sug.innerHTML=sugItems.map((x,i)=>'<div class="si'+(i===sugIdx?' on':'')+'" data-i="'+i+'"><span class="ic '+x.k+'">'+KICON[x.k]+'</span><span class="l">'+esc(x.l)+'</span><span class="d">'+esc(x.d)+'</span></div>').join('')
+   +(sugItems[sugIdx]&&sugItems[sugIdx].doc?'<div class="sdoc">'+esc(sugItems[sugIdx].doc)+'</div>':'');
+  const on=sug.querySelector('.si.on');if(on)on.scrollIntoView({block:'nearest'});
+}
+function placeSug(){
+  const c=caretXY(),wrap=$('#edwrap'),gw=gut.offsetWidth;
+  let left=gw+c.x-scroll.scrollLeft-(sugCtx?sugCtx.prefix.length*CW:0),top=c.y+LH-scroll.scrollTop;
+  const sh=sug.offsetHeight||150,sw=sug.offsetWidth||260;
+  if(top+sh>wrap.clientHeight)top=Math.max(0,c.y-scroll.scrollTop-sh);
+  left=Math.max(4,Math.min(left,wrap.clientWidth-sw-4));
+  sug.style.left=left+'px';sug.style.top=top+'px';
+}
+function acceptSug(i){
+  const it=sugItems[i];if(!it)return;
+  const v=ta.value,p=ta.selectionStart,ps=sugCtx.prefix.length,ls=v.lastIndexOf('\n',p-1)+1;
+  const baseInd=/^[ \t]*/.exec(v.slice(ls,p))[0];
+  let text=it.ins.replace(/\n/g,'\n'+baseInd);
+  const ci=text.indexOf(CARET);if(ci>=0)text=text.replace(CARET,'');
+  suppress=true;hideSug();
+  ta.setSelectionRange(p-ps,p);ins(text);
+  const start=p-ps;ta.setSelectionRange(ci>=0?start+ci:start+text.length,ci>=0?start+ci:start+text.length);
+  suppress=false;updatePos();ensureVisible();
+  if(it.k==='M'||it.k==='k'||it.k==='s'){}
+}
+
+/* ================= PYTHON RUNTIME (worker) ================= */
+const SETUP="import builtins, json, sys, importlib\n_lines = json.loads(__lines__)\ndef _input(prompt=''):\n    sys.stdout.write(str(prompt))\n    if not _lines:\n        sys.stdout.write('\\n')\n        raise EOFError('Нет данных для input(): впишите их во вкладке «Ввод»')\n    v = _lines.pop(0)\n    sys.stdout.write(v + '\\n')\n    return v\nbuiltins.input = _input\nfor _m in json.loads(__mods__):\n    sys.modules.pop(_m, None)\nimportlib.invalidate_caches()\n";
+const WSRC=[
+"let py=null;",
+"async function boot(){importScripts('"+PYBASE+"/pyodide.js');py=await loadPyodide({indexURL:'"+PYBASE+"/'});postMessage({t:'ready'});}",
+"boot().catch(e=>postMessage({t:'fatal',m:String(e&&e.message||e)}));",
+"onmessage=async ev=>{",
+" const d=ev.data;if(d.t!=='run'||!py)return;",
+" try{",
+"  for(const n in d.files){py.FS.writeFile('/home/pyodide/'+n,d.files[n]);}",
+"  py.setStdout({batched:s=>postMessage({t:'out',s:s+'\\n'})});",
+"  py.setStderr({batched:s=>postMessage({t:'err',s:s+'\\n'})});",
+"  py.globals.set('__lines__',JSON.stringify(d.stdin));",
+"  py.globals.set('__mods__',JSON.stringify(Object.keys(d.files).filter(n=>n.endsWith('.py')).map(n=>n.slice(0,-3))));",
+"  py.runPython(d.setup);",
+"  await py.loadPackagesFromImports(d.code);",
+"  const g=py.toPy({__name__:'__main__'});",
+"  await py.runPythonAsync(d.code,{globals:g});",
+"  py.runPython('import sys\\nsys.stdout.flush()\\nsys.stderr.flush()');",
+" }catch(e){postMessage({t:'err',s:String(e&&e.message||e)+'\\n'});}",
+" postMessage({t:'done'});",
+"};"
+].join('\n');
+let worker=null,ready=false,running=false,runAfter=false,t0=0,curRunName='main.py';
+function startWorker(){
+  killWorker();
+  ready=false;setStatus('Python: загрузка…',true);
+  try{
+    worker=new Worker(URL.createObjectURL(new Blob([WSRC],{type:'text/javascript'})));
+  }catch(e){setStatus('Python недоступен',false);out('Не удалось запустить Python: '+e.message+'\n','o-err');return}
+  worker.onmessage=ev=>{
+    const d=ev.data;
+    if(d.t==='ready'){ready=true;setStatus('Python 3 (Pyodide) готов',false);if(runAfter){runAfter=false;doRun()}}
+    else if(d.t==='fatal'){setStatus('Python не загрузился',false);out('Python не загрузился ('+d.m+').\nОткройте сайт в обычном браузере (например, на GitHub Pages) с доступом в интернет. В окне предпросмотра Claude загрузка Python запрещена.\n','o-err');runAfter=false;running=false;runUi()}
+    else if(d.t==='out')out(d.s);
+    else if(d.t==='err')out(cleanErr(d.s),'o-err');
+    else if(d.t==='done'){running=false;runUi();out('[Завершено за '+((performance.now()-t0)/1000).toFixed(2)+' с]\n','o-dim');setStatus('Python 3 (Pyodide) готов',false)}
+  };
+  worker.onerror=e=>{out('Ошибка запуска: '+(e.message||'неизвестная')+'\n','o-err');setStatus('Python не загрузился',false);running=false;runUi()};
+}
+function killWorker(){if(worker){try{worker.terminate()}catch(e){}worker=null}ready=false;running=false}
+function cleanErr(s){
+  const lines=s.split('\n'),res=[];
+  for(let i=0;i<lines.length;i++){
+    if(/^\s+File ".*_pyodide.*"/.test(lines[i])){while(i+1<lines.length&&/^\s{4}\S/.test(lines[i+1])&&!/^\s+File /.test(lines[i+1]))i++;continue}
+    res.push(lines[i].replace('File "<exec>"','File "'+curRunName+'"'));
+  }
+  return res.join('\n');
+}
+function out(text,cls){
+  const o=$('#out');if(!o)return;
+  const sp=document.createElement('span');if(cls)sp.className=cls;sp.textContent=text;o.appendChild(sp);
+  while(o.textContent.length>200000&&o.firstChild)o.removeChild(o.firstChild);
+  o.scrollTop=o.scrollHeight;
+}
+function setStatus(t,busy){const s=$('#stpy');if(s)s.textContent=t;const b=$('#status');if(b)b.classList.toggle('busy',!!busy)}
+function runUi(){
+  const b=$('#runbtn');if(!b)return;
+  b.classList.toggle('stop',running);b.title=running?'Остановить':'Запустить (Ctrl+Enter)';
+  b.innerHTML=running?'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>':'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l12-7.5z"/></svg>';
+}
+ACT.run=()=>{
+  if(running){
+    killWorker();out('[Остановлено]\n','o-err');runUi();setStatus('Перезапуск Python…',true);startWorker();return;
+  }
+  const o=$('#out');if(o&&$('#panel').classList.contains('collapsed'))ACT.togglepanel();
+  const pt=document.querySelector('.pt[data-p="out"]');if(pt&&!pt.classList.contains('on'))ACT.ptab(pt);
+  curFile().content=ta.value;save();
+  if(!ready){if(!worker)startWorker();runAfter=true;out('Python ещё загружается, запущу сразу после загрузки…\n','o-dim');return}
+  doRun();
+};
+function doRun(){
+  const f=curFile();curRunName=f.name;
+  const files={};S.files.forEach(x=>{files[x.name]=x.content});
+  const sv=$('#stdin').value;const stdin=sv?sv.split('\n'):[];
+  running=true;runUi();t0=performance.now();setStatus('Выполняется…',true);
+  out('▶ '+f.name+'\n','o-info');
+  worker.postMessage({t:'run',code:f.content,files,stdin,setup:SETUP});
+}
+
+/* ---------- global events ---------- */
+document.addEventListener('keydown',e=>{
+  const t=e.target;
+  if(e.key==='Enter'&&!e.shiftKey&&t.dataset&&t.dataset.enter){e.preventDefault();ACT[t.dataset.enter]()}
+});
+document.addEventListener('click',e=>{
+  const m=$('#menu');if(m&&!m.hidden&&!e.target.closest('#menu')&&!e.target.closest('[data-act="gear"]'))m.hidden=true;
+  const t=e.target.closest('[data-act]');
+  if(t&&ACT[t.dataset.act])ACT[t.dataset.act](t,e);
+});
+
+if(S.name)greet();else intro(false);
+</script>
+</body>
+</html>
